@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>🚀 Astro Academy — Your Journey to the Stars</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ── Animated Starfield ── -->
+  <div id="starfield"></div>
+
+  <!-- ═══════════════════════════════════════════════════
+       PROFILE SCREEN (shown on launch, hidden after pick)
+  ════════════════════════════════════════════════════ -->
+  <div id="profile-screen">
+    <div id="profile-box">
+      <div class="ps-logo">🌌 ASTRO<span>ACADEMY</span></div>
+      <h2>Mission Control</h2>
+      <p class="ps-sub">Choose your pilot profile to begin</p>
+
+      <div id="ps-main-btns">
+        <button class="ps-btn ps-btn-primary" onclick="profileLoadFile()">📁 Load Existing Profile</button>
+        <button class="ps-btn ps-btn-secondary" onclick="profileShowNew()">✨ New Profile</button>
+        <div id="ps-localstorage-option" style="display:none">
+          <div class="ps-divider">or</div>
+          <button class="ps-btn ps-btn-ghost" onclick="profileContinueLocal()">⚡ Continue as &ldquo;<span id="ps-local-name"></span>&rdquo;</button>
+        </div>
+      </div>
+
+      <div id="ps-new-form" style="display:none">
+        <input type="text" id="ps-name-input" placeholder="Enter your pilot name..." maxlength="30" onkeydown="if(event.key==='Enter') profileCreateNew()" />
+        <div class="ps-form-btns">
+          <button class="ps-btn ps-btn-primary" onclick="profileCreateNew()">🚀 Launch!</button>
+          <button class="ps-btn ps-btn-ghost" onclick="profileBackToMain()">← Back</button>
+        </div>
+      </div>
+
+      <p class="ps-note">💾 Progress saves to a <code>.json</code> file on your computer<br>Portable · Shareable · Browser-independent</p>
+    </div>
+  </div>
+  <div id="app">
+
+    <!-- ══════════════════════════════════════════
+         TOP NAVIGATION BAR
+    ══════════════════════════════════════════ -->
+    <nav id="topbar">
+      <div id="logo">🌌 ASTRO<span>ACADEMY</span></div>
+
+      <div id="topnav">
+        <button class="topnav-btn active" id="nav-home"      onclick="showView('home')">🏠 Home</button>
+        <button class="topnav-btn"        id="nav-plan"      onclick="showView('plan')">📋 3-Year Plan</button>
+        <button class="topnav-btn"        id="nav-week"      onclick="showView('week')">📚 This Week</button>
+        <button class="topnav-btn"        id="nav-resources" onclick="showView('resources')">🔭 Resources</button>
+      </div>
+
+      <div id="coin-badge">
+        <span class="coin-icon">🪙</span>
+        <span id="coin-count">0</span>
+        <span class="coin-label">coins</span>
+      </div>
+
+      <div id="save-area">
+        <span id="save-indicator"></span>
+        <button id="save-btn" onclick="saveToFile(true)" title="Save profile to file">💾</button>
+        <button id="switch-profile-btn" onclick="showProfileScreen()" title="Switch profile">👤</button>
+      </div>
+
+      <div id="week-badge">
+        <div class="dot"></div>
+        <span id="week-badge-text">Week 1 of 130</span>
+      </div>
+    </nav>
+
+    <!-- ══════════════════════════════════════════
+         MAIN CONTENT
+    ══════════════════════════════════════════ -->
+    <main id="main">
+
+      <!-- ── HOME VIEW ──────────────────────── -->
+      <section id="view-home" class="view active">
+
+        <!-- Hero -->
+        <div id="hero">
+          <h1 id="hero-greeting">Your Journey to the Stars Starts Here</h1>
+          <p class="subtitle" id="hero-subtitle">
+            A 3-year adventure from Grade 4 math all the way to the edge of the universe.
+            One week at a time. You've got this, future astrophysicist! 🌌
+          </p>
+          <button class="btn-secondary" onclick="openNameModal()" style="margin-top:12px;font-size:0.8rem;">✏️ Change Pilot Name</button>
+        </div>
+
+        <!-- Rocket Builder -->
+        <div id="rocket-builder-wrap">
+          <div id="rocket-builder-label">🚀 <span id="rocket-stage-name">Your Rocket is Being Built...</span></div>
+          <div id="rocket-svg-container">
+            <!-- SVG Rocket assembled piece by piece -->
+            <svg id="rocket-svg" viewBox="0 0 160 340" xmlns="http://www.w3.org/2000/svg">
+              <!-- PART 10: Launch flames (stage 10, week 118-130) -->
+              <g id="rp-flames" class="rocket-part" opacity="0">
+                <ellipse cx="80" cy="318" rx="22" ry="14" fill="#ff6b35" opacity="0.9"/>
+                <ellipse cx="80" cy="326" rx="14" ry="10" fill="#ffd700" opacity="0.95"/>
+                <ellipse cx="62" cy="314" rx="10" ry="7" fill="#ff6b35" opacity="0.8"/>
+                <ellipse cx="98" cy="314" rx="10" ry="7" fill="#ff6b35" opacity="0.8"/>
+                <ellipse cx="80" cy="320" rx="8" ry="6" fill="#fff" opacity="0.6"/>
+              </g>
+              <!-- PART 9: Launch pad base (stage 9, weeks 87-96) -->
+              <g id="rp-pad" class="rocket-part" opacity="0">
+                <rect x="30" y="306" width="100" height="10" rx="3" fill="#546e7a"/>
+                <rect x="20" y="314" width="120" height="6" rx="2" fill="#455a64"/>
+                <rect x="68" y="296" width="8" height="12" fill="#607d8b"/>
+                <rect x="84" y="296" width="8" height="12" fill="#607d8b"/>
+              </g>
+              <!-- PART 8: Engine nozzle (stage 8, weeks 78-86) -->
+              <g id="rp-nozzle" class="rocket-part" opacity="0">
+                <path d="M60 270 L100 270 L108 296 L52 296 Z" fill="#78909c"/>
+                <ellipse cx="80" cy="270" rx="20" ry="5" fill="#90a4ae"/>
+                <ellipse cx="80" cy="296" rx="28" ry="6" fill="#546e7a"/>
+              </g>
+              <!-- PART 7: Fuel lines / details (stage 7, weeks 66-77) -->
+              <g id="rp-details" class="rocket-part" opacity="0">
+                <rect x="55" y="180" width="4" height="80" rx="2" fill="#00d4ff" opacity="0.7"/>
+                <rect x="101" y="180" width="4" height="80" rx="2" fill="#00d4ff" opacity="0.7"/>
+                <rect x="58" y="200" width="44" height="3" rx="1" fill="#6c63ff" opacity="0.6"/>
+                <rect x="58" y="220" width="44" height="3" rx="1" fill="#6c63ff" opacity="0.6"/>
+                <rect x="58" y="240" width="44" height="3" rx="1" fill="#6c63ff" opacity="0.6"/>
+                <circle cx="80" cy="210" r="8" fill="#0b1120" stroke="#00d4ff" stroke-width="2"/>
+                <text x="80" y="214" text-anchor="middle" font-size="8" fill="#00d4ff">★</text>
+              </g>
+              <!-- PART 6: Right fin (stage 6, weeks 56-65) -->
+              <g id="rp-fin-r" class="rocket-part" opacity="0">
+                <path d="M100 230 L130 270 L130 296 L100 270 Z" fill="#f953c6"/>
+                <path d="M100 230 L130 270 L130 296 L100 270 Z" fill="url(#finGrad)" opacity="0.5"/>
+              </g>
+              <!-- PART 5: Left fin (stage 5, weeks 41-55) -->
+              <g id="rp-fin-l" class="rocket-part" opacity="0">
+                <path d="M60 230 L30 270 L30 296 L60 270 Z" fill="#f953c6"/>
+                <path d="M60 230 L30 270 L30 296 L60 270 Z" fill="url(#finGradL)" opacity="0.5"/>
+              </g>
+              <!-- PART 4: Body bottom (stage 4, weeks 31-40) -->
+              <g id="rp-body-bot" class="rocket-part" opacity="0">
+                <rect x="58" y="230" width="44" height="42" rx="4" fill="url(#bodyGrad)"/>
+                <rect x="62" y="234" width="8" height="34" rx="2" fill="rgba(255,255,255,0.06)"/>
+              </g>
+              <!-- PART 3: Body middle (stage 3, weeks 21-30) -->
+              <g id="rp-body-mid" class="rocket-part" opacity="0">
+                <rect x="58" y="160" width="44" height="72" rx="4" fill="url(#bodyGrad)"/>
+                <rect x="62" y="164" width="8" height="64" rx="2" fill="rgba(255,255,255,0.06)"/>
+              </g>
+              <!-- PART 2: Body top / cockpit (stage 2, weeks 11-20) -->
+              <g id="rp-body-top" class="rocket-part" opacity="0">
+                <rect x="60" y="110" width="40" height="52" rx="6" fill="url(#bodyGrad)"/>
+                <ellipse cx="80" cy="128" rx="13" ry="13" fill="#0b1120" stroke="#00d4ff" stroke-width="2"/>
+                <ellipse cx="80" cy="128" rx="9" ry="9" fill="#001d3d"/>
+                <ellipse cx="77" cy="125" rx="3" ry="3" fill="rgba(0,212,255,0.4)"/>
+              </g>
+              <!-- PART 1: Nose cone (stage 1, weeks 1-10) -->
+              <g id="rp-nose" class="rocket-part" opacity="0">
+                <path d="M80 50 L106 112 Q80 118 54 112 Z" fill="url(#noseGrad)"/>
+                <path d="M80 50 L93 112 Q80 115 67 112 Z" fill="rgba(255,255,255,0.08)"/>
+              </g>
+              <!-- Defs -->
+              <defs>
+                <linearGradient id="noseGrad" x1="0" y1="0" x2="1" y2="0">
+                  <stop offset="0%" stop-color="#6c63ff"/>
+                  <stop offset="100%" stop-color="#a78bfa"/>
+                </linearGradient>
+                <linearGradient id="bodyGrad" x1="0" y1="0" x2="1" y2="0">
+                  <stop offset="0%" stop-color="#1e3a5f"/>
+                  <stop offset="40%" stop-color="#2d5a9e"/>
+                  <stop offset="100%" stop-color="#1e3a5f"/>
+                </linearGradient>
+                <linearGradient id="finGrad" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0%" stop-color="#fff" stop-opacity="0.2"/>
+                  <stop offset="100%" stop-color="#fff" stop-opacity="0"/>
+                </linearGradient>
+                <linearGradient id="finGradL" x1="1" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="#fff" stop-opacity="0.2"/>
+                  <stop offset="100%" stop-color="#fff" stop-opacity="0"/>
+                </linearGradient>
+              </defs>
+              <!-- Ghost outline (unbuilt parts shown faintly) -->
+              <g id="rocket-ghost" opacity="0.07">
+                <path d="M80 50 L106 112 Q80 118 54 112 Z" fill="white"/>
+                <rect x="60" y="110" width="40" height="52" rx="6" fill="white"/>
+                <rect x="58" y="160" width="44" height="72" rx="4" fill="white"/>
+                <rect x="58" y="230" width="44" height="42" rx="4" fill="white"/>
+                <path d="M60 230 L30 270 L30 296 L60 270 Z" fill="white"/>
+                <path d="M100 230 L130 270 L130 296 L100 270 Z" fill="white"/>
+                <path d="M60 270 L100 270 L108 296 L52 296 Z" fill="white"/>
+                <rect x="30" y="306" width="100" height="16" rx="3" fill="white"/>
+              </g>
+            </svg>
+            <div id="rocket-parts-list">
+              <!-- rendered by JS -->
+            </div>
+          </div>
+          <div id="rocket-coins-row">
+            <div id="rocket-budget-display">
+              <span class="coin-icon-lg">🪙</span>
+              <div>
+                <div id="total-coins-display">0 Gold Coins</div>
+                <div id="rocket-budget-label">Rocket Budget</div>
+              </div>
+            </div>
+            <div id="coins-breakdown">
+              <span id="coins-hw">+0 from homework</span>
+              <span id="coins-weeks">+0 from weeks</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Progress Ring -->
+        <div id="progress-ring-wrap">
+          <div id="progress-ring-container">
+            <svg width="180" height="180" viewBox="0 0 180 180">
+              <defs>
+                <linearGradient id="ringGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%"   stop-color="#6c63ff" />
+                  <stop offset="100%" stop-color="#00d4ff" />
+                </linearGradient>
+              </defs>
+              <circle id="progress-ring-bg"   cx="90" cy="90" r="80" />
+              <circle id="progress-ring-fill" cx="90" cy="90" r="80" />
+            </svg>
+            <div id="progress-ring-text">
+              <span class="pct" id="progress-pct">0%</span>
+              <span class="pct-label">Complete</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Stats Row -->
+        <div id="stats-row">
+          <div class="stat-card">
+            <div class="stat-num" id="stat-weeks-done">0</div>
+            <div class="stat-label">Weeks Done</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-num" id="stat-current-week">1</div>
+            <div class="stat-label">Current Week</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-num" id="stat-weeks-left">130</div>
+            <div class="stat-label">Weeks Remaining</div>
+          </div>
+        </div>
+
+        <!-- Current Week Card -->
+        <div id="current-week-card">
+          <!-- rendered by JS -->
+        </div>
+
+        <!-- Achievements -->
+        <div id="achievements-bar">
+          <h3>🏆 Achievements</h3>
+          <div id="achievements-list">
+            <!-- rendered by JS -->
+          </div>
+        </div>
+
+        <!-- Motivational Quote -->
+        <div id="motivational-banner">
+          <!-- rendered by JS -->
+        </div>
+
+      </section><!-- /view-home -->
+
+
+      <!-- ── PLAN VIEW ──────────────────────── -->
+      <section id="view-plan" class="view">
+
+        <div id="plan-header">
+          <h1>📋 Your 3-Year Astrophysics Roadmap</h1>
+          <p>10 units · 130 weeks · One incredible future</p>
+        </div>
+
+        <div id="plan-units-container">
+          <!-- rendered by JS -->
+        </div>
+
+      </section><!-- /view-plan -->
+
+
+      <!-- ── WEEK VIEW ──────────────────────── -->
+      <section id="view-week" class="view">
+
+        <!-- Header bar -->
+        <div id="week-header-bar">
+          <button id="back-btn">← Back to Plan</button>
+          <div id="week-title-header">Week Details</div>
+        </div>
+
+        <!-- Hero banner -->
+        <div id="week-hero-banner" data-emoji="🚀">
+          <!-- rendered by JS -->
+        </div>
+
+        <!-- Homework Section -->
+        <div class="section-card">
+          <h3 class="hw-color">📝 This Week's Homework</h3>
+          <p style="font-size:0.82rem;color:var(--text-dim);margin-bottom:14px;">
+            Click each task to check it off. These are designed to take <strong style="color:white;">30–45 minutes total</strong> — never overwhelming!
+          </p>
+          <div id="hw-section">
+            <!-- rendered by JS -->
+          </div>
+        </div>
+
+        <!-- Fun Activity Section -->
+        <div class="section-card">
+          <h3 class="fun-color">🎮 Fun Activity</h3>
+          <div id="fun-activity-content">
+            <!-- rendered by JS -->
+          </div>
+        </div>
+
+        <!-- Video Tip Section -->
+        <div class="section-card">
+          <h3 class="vid-color">🎬 Video Tip — Search on YouTube</h3>
+          <p style="font-size:0.82rem;color:var(--text-dim);margin-bottom:10px;">
+            Watching great videos makes learning stick. Search for this on YouTube!
+          </p>
+          <div id="video-tip-content">
+            <!-- rendered by JS -->
+          </div>
+        </div>
+
+        <!-- Week Navigation Row -->
+        <div id="week-nav-row">
+          <button id="prev-week-btn" class="btn-secondary">← Previous Week</button>
+          <button id="mark-complete-btn" class="btn-primary">🎯 Mark Week as Complete!</button>
+          <button id="next-week-btn" class="btn-secondary">Next Week →</button>
+        </div>
+
+      </section><!-- /view-week -->
+
+
+      <!-- ── RESOURCES VIEW ─────────────────── -->
+      <section id="view-resources" class="view">
+
+        <div id="resources-header">
+          <h1>🔭 Your Resource Library</h1>
+          <p>The best websites, books, and YouTube channels for a young astrophysicist 🇨🇦</p>
+        </div>
+
+        <div class="resources-section">
+          <h2>🌐 Best Websites</h2>
+          <div class="resource-grid" id="resources-websites"><!-- JS --></div>
+        </div>
+
+        <div class="resources-section">
+          <h2>📚 Recommended Books</h2>
+          <div class="resource-grid" id="resources-books"><!-- JS --></div>
+        </div>
+
+        <div class="resources-section">
+          <h2>📺 YouTube Channels</h2>
+          <div class="resource-grid" id="resources-youtube"><!-- JS --></div>
+        </div>
+
+        <!-- Canadian bonus section -->
+        <div class="section-card" style="margin-top:32px;">
+          <h3 class="fun-color">🍁 Canadian Space Resources</h3>
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px;margin-top:12px;">
+            <div class="resource-card">
+              <a href="https://www.asc-csa.gc.ca/eng/default.asp" target="_blank">🍁 Canadian Space Agency</a>
+              <div class="rc-desc">Canada's official space agency — job postings, research, and missions!</div>
+            </div>
+            <div class="resource-card">
+              <a href="https://www.cwsf.youthscience.ca" target="_blank">🔬 Canada-Wide Science Fair</a>
+              <div class="rc-desc">Enter your own science fair project and compete nationally!</div>
+            </div>
+            <div class="resource-card">
+              <a href="https://www.rasc.ca" target="_blank">🔭 Royal Astronomical Society of Canada</a>
+              <div class="rc-desc">Find a local astronomy club near you — free star nights!</div>
+            </div>
+            <div class="resource-card">
+              <a href="https://chrishadfield.ca" target="_blank">👨‍🚀 Chris Hadfield</a>
+              <div class="rc-desc">Ontario-born astronaut and ISS Commander. An inspiration for all Canadians!</div>
+            </div>
+          </div>
+        </div>
+
+      </section><!-- /view-resources -->
+
+    </main><!-- /main -->
+  </div><!-- /app -->
+
+  <!-- ── Name Setup Modal ── -->
+  <div id="name-modal-overlay">
+    <div id="name-modal">
+      <div id="name-modal-rocket">🚀</div>
+      <h2>Welcome, Future Astrophysicist!</h2>
+      <p>What's your name, pilot? Let's personalise your mission!</p>
+      <input type="text" id="name-input" placeholder="Enter your name..." maxlength="24" autocomplete="off" />
+      <button class="btn-primary" id="name-save-btn" onclick="savePilotName()">🚀 Begin My Mission!</button>
+    </div>
+  </div>
+
+  <!-- ── Toast Notification ── -->
+  <div id="toast"></div>
+
+  <!-- ── Scroll to Top ── -->
+  <button id="scroll-top-btn" title="Back to top">↑</button>
+
+  <!-- ── Scripts ── -->
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+
+</body>
+</html>
