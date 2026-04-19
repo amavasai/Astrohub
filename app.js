@@ -163,6 +163,8 @@ async function profileLoadFile() {
     const file = await handle.getFile();
     const obj  = JSON.parse(await file.text());
     applyStateObj(obj);
+    recalculateCoins();
+    syncCompletedWeeks();
     hideProfileScreen();
     updateAll();
     showView('home');
@@ -175,6 +177,8 @@ async function profileLoadFile() {
 
 function profileContinueLocal() {
   loadStateFromLocalStorage();
+  recalculateCoins();
+  syncCompletedWeeks();
   hideProfileScreen();
   updateAll();
   showView('home');
@@ -491,13 +495,6 @@ function openWeek(weekNum) {
   // Video tip
   $('video-tip-content').innerHTML = `<div class="video-tip-card">🎬 ${data.videoTip}</div>`;
 
-  // Mark complete button
-  const btn = $('mark-complete-btn');
-  const isComplete = STATE.completedWeeks.includes(weekNum);
-  btn.textContent = isComplete ? '✅ Already Completed!' : '🎯 Mark Week as Complete!';
-  btn.className = 'btn-primary' + (isComplete ? ' done' : '');
-  btn.onclick = () => markWeekComplete(weekNum);
-
   // Prev / Next
   const prevBtn = $('prev-week-btn');
   const nextBtn = $('next-week-btn');
@@ -513,21 +510,60 @@ function openWeek(weekNum) {
 }
 
 function toggleHW(key, li) {
+  const weekNum = STATE.viewingWeek;
+  const data    = getWeekData(weekNum);
+
+  // Don't allow unchecking if the week is already fully completed
+  if (STATE.completedWeeks.includes(weekNum)) return;
+
   if (STATE.completedHW[key]) {
     delete STATE.completedHW[key];
     li.classList.remove('done');
-    // refund coin only if we have some
-    STATE.coins = Math.max(0, STATE.coins - 5);
-    STATE.coinsFromHW = Math.max(0, STATE.coinsFromHW - 5);
   } else {
     STATE.completedHW[key] = true;
     li.classList.add('done');
-    STATE.coins += 5;
-    STATE.coinsFromHW += 5;
     spawnCoinBurst();
   }
+  recalculateCoins();
   saveState();
   updateCoins();
+
+  // Auto-complete week when every task is ticked
+  if (data) {
+    const allDone = data.homework.every((_, idx) => !!STATE.completedHW[`w${weekNum}_${idx}`]);
+    if (allDone && !STATE.completedWeeks.includes(weekNum)) {
+      markWeekComplete(weekNum);
+    }
+  }
+}
+
+// ── Coin Recalculation (source of truth) ─────────────────
+function recalculateCoins() {
+  STATE.coinsFromHW    = Object.keys(STATE.completedHW).length * 5;
+  STATE.coinsFromWeeks = 0;
+  STATE.coins          = STATE.coinsFromHW;
+}
+
+// Auto-complete any week where every HW task is already ticked
+function syncCompletedWeeks() {
+  const allUnits = [
+    ...CURRICULUM.year1.units,
+    ...CURRICULUM.year2.units,
+    ...CURRICULUM.year3.units,
+  ];
+  allUnits.forEach(unit => {
+    unit.weeks_detail.forEach(w => {
+      const weekNum = w.week;
+      if (STATE.completedWeeks.includes(weekNum)) return;
+      const allDone = w.homework.every((_, idx) => !!STATE.completedHW[`w${weekNum}_${idx}`]);
+      if (allDone && w.homework.length > 0) {
+        STATE.completedWeeks.push(weekNum);
+        if (weekNum >= STATE.currentWeek && weekNum < 130) {
+          STATE.currentWeek = weekNum + 1;
+        }
+      }
+    });
+  });
 }
 
 // ── Mark Week Complete ─────────────────────────────────
@@ -539,22 +575,16 @@ function markWeekComplete(weekNum) {
       STATE.currentWeek = weekNum + 1;
     }
     // Award coins
-    STATE.coins += 10;
-    STATE.coinsFromWeeks += 10;
+    recalculateCoins();
     saveState();
     launchConfetti();
     spawnCoinBurst();
     const name = STATE.pilotName ? STATE.pilotName : 'future astrophysicist';
-    showToast(`🎉 Week ${weekNum} complete, ${name}! +10 🪙 coins!`);
+    showToast(`🎉 Week ${weekNum} complete, ${name}! Keep it up! 🚀`);
     updateAll();
 
     // Check achievements
     checkAchievements(weekNum);
-
-    // Refresh mark button
-    const btn = $('mark-complete-btn');
-    btn.textContent = '✅ Already Completed!';
-    btn.className = 'btn-primary done';
   }
 }
 
@@ -645,7 +675,7 @@ function updateCoins() {
   if (hw) hw.textContent = `+${STATE.coinsFromHW} from homework tasks`;
 
   const wk = $('coins-weeks');
-  if (wk) wk.textContent = `+${STATE.coinsFromWeeks} from completed weeks`;
+  if (wk) wk.textContent = `Complete homework tasks to earn more!`;
 }
 
 function spawnCoinBurst() {

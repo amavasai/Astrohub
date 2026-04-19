@@ -899,6 +899,8 @@ html, body {
 #mark-complete-btn.done {
   background: linear-gradient(135deg, #555, #444);
   box-shadow: none;
+  cursor: default;
+  opacity: 0.6;
 }
 
 /* ══════════════════════════════════════════════
